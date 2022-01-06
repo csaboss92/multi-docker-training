@@ -13,7 +13,7 @@ after_success:
   - docker_build -t csaboss/multi-nginx ./nginx
   - docker_build -t csaboss/multi-server ./server
   - docker_build -t csaboss/multi-worker ./worker
-  - echo "$DOCKER_PW" | docker login -u "$DOCKER_USER" --password-stdin
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker push csaboss/multi-client
   - docker push csaboss/multi-nginx
   - docker push csaboss/multi-server
