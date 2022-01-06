@@ -1,20 +1,36 @@
 sudo: required
-services: 
+language: generic
+
+services:
   - docker
 
 before_install:
   - docker build -t csaboss/react-test -f ./client/Dockerfile.dev ./client
 
 script:
-  - docker run -e CI=true csaboss/react-test npm test -- --coverage
+  - docker run -e CI=true csaboss/react-test npm test
 
 after_success:
   - docker_build -t csaboss/multi-client ./client
   - docker_build -t csaboss/multi-nginx ./nginx
   - docker_build -t csaboss/multi-server ./server
   - docker_build -t csaboss/multi-worker ./worker
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
   - docker push csaboss/multi-client
   - docker push csaboss/multi-nginx
   - docker push csaboss/multi-server
   - docker push csaboss/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: 'us-east-1'
+  app: 'multi-docker'
+  env: 'MultiDocker-env'
+  bucket_name: 'elasticbeanstalk-us-east-1-923445559289'
+  bucket_path: 'docker-multi'
+  on:
+    branch: main
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
